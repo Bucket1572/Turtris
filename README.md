@@ -25,4 +25,4 @@ Controls
 
 How to play
 -----------
-Run console.py to play.# Turtris
+Run console.py to play.
