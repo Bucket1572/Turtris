@@ -18,8 +18,9 @@ special = None
 
 class Block:
     '''Blocks'''
-    def __init__(self, positions, pivot = 0):
+    def __init__(self, positions, color, pivot = 0):
         self.pos = positions #Position
+        self.col = color
         self.pivot = pivot #Pivot for rotating
 
     def is_ground(self):
@@ -71,24 +72,22 @@ class Block:
             if direction == 0: #Left side
                 for pos in self.pos:
                     pos[0] -= 1
+                for piv in self.pivot:
+                    piv[0] -= 1
             else:
                 for pos in self.pos:
                     pos[0] += 1
+                for piv in self.pivot:
+                    piv[0] += 1
 
-    def is_rotatable(self, direction):
-        '''
-        is_rotatable
-            check if the block is rotatable
-        params:
-            direction : 0 for clockwise, 1 for counterclockwise
-        '''
+    def _is_rotatable(self, direction, pivot):
         if direction == 0: #Clockwise
             rotatable = True
             for pos in self.pos:
-                rx = pos[0] - self.pos[self.pivot][0] #Relative x according to pivot point
-                ry = pos[1] - self.pos[self.pivot][1] #Relative y according to pivot point
-                arx = self.pos[self.pivot][0] - ry
-                ary = self.pos[self.pivot][1] + rx
+                rx = pos[0] - pivot[0] #상대 좌표
+                ry = pos[1] - pivot[1]
+                arx = pivot[0] - ry #회전 후, 원래 좌표로 돌려 놓음
+                ary = pivot[1] + rx
                 if arx < 0 or arx >= width or ary >= height:
                     rotatable = False
                 elif ary in stack[arx]:
@@ -97,42 +96,124 @@ class Block:
         else:
             rotatable = True
             for pos in self.pos:
-                rx = pos[0] - self.pos[self.pivot][0] #Relative x according to pivot point
-                ry = pos[1] - self.pos[self.pivot][1] #Relative y according to pivot point
-                arx = self.pos[self.pivot][0] + ry
-                ary = self.pos[self.pivot][1] - rx
+                rx = pos[0] - pivot[0] #상대 좌표
+                ry = pos[1] - pivot[1]
+                arx = pivot[0] + ry #회전 후, 원래 좌표로 돌려 놓음
+                ary = pivot[1] - rx
                 if arx < 0 or arx >= width or ary >= height:
                     rotatable = False
                 elif ary in stack[arx]:
                     rotatable = False
             return rotatable
         
+    def _rotate(self, direction, pivot):
+        if direction == 0: #시계
+            new = []
+            newp = []
+            for pos in self.pos:
+                rx = pos[0] - pivot[0] #상대 좌표
+                ry = pos[1] - pivot[1] 
+                arx = pivot[0] - ry #회전 및, 원래 좌표 찾기
+                ary = pivot[1] + rx
+                new.append([arx, ary]) #좌표 등록
+            self.pos = new
+            for piv in self.pivot:
+                rx = piv[0] - pivot[0]
+                ry = piv[1] - pivot[1]
+                arx = pivot[0] - ry
+                ary = pivot[1] + rx
+                newp.append([arx, ary, piv[2]])
+            self.pivot = newp
+        else:
+            new = []
+            newp = []
+            for pos in self.pos:
+                rx = pos[0] - pivot[0]
+                ry = pos[1] - pivot[1] 
+                arx = pivot[0] + ry
+                ary = pivot[1] - rx
+                new.append([arx, ary])
+            self.pos = new
+            for piv in self.pivot:
+                rx = piv[0] - pivot[0]
+                ry = piv[1] - pivot[1] 
+                arx = pivot[0] + ry
+                ary = pivot[1] - rx
+                newp.append([arx, ary, piv[2]])
+            self.pivot = newp
+
+    def _is_rotatable_with_falling(self, direction, pivot):
+        if direction == 0: #Clockwise
+            rotatable = True
+            for pos in self.pos:
+                rx = pos[0] - pivot[0] #상대 좌표
+                ry = pos[1] - pivot[1]
+                arx = pivot[0] - ry #회전 후, 원래 좌표로 돌려 놓음
+                ary = pivot[1] + rx + 1 #회전하면서 동시에 한 칸 떨어짐.
+                if arx < 0 or arx >= width or ary >= height:
+                    rotatable = False
+                elif ary in stack[arx]:
+                    rotatable = False
+            return rotatable
+        else:
+            rotatable = True
+            for pos in self.pos:
+                rx = pos[0] - pivot[0] #상대 좌표
+                ry = pos[1] - pivot[1]
+                arx = pivot[0] + ry #회전 후, 원래 좌표로 돌려 놓음
+                ary = pivot[1] - rx + 1 #회전하면서 동시에 한 칸 떨어짐.
+                if arx < 0 or arx >= width or ary >= height:
+                    rotatable = False
+                elif ary in stack[arx]:
+                    rotatable = False
+            return rotatable
+    
+    def _rotate_with_falling(self, direction, pivot):
+        if direction == 0: #시계
+            new = []
+            newp = []
+            for pos in self.pos:
+                rx = pos[0] - pivot[0] #상대 좌표
+                ry = pos[1] - pivot[1] 
+                arx = pivot[0] - ry #회전 및, 원래 좌표 찾기
+                ary = pivot[1] + rx + 1 #회전하고 y좌표 1 증가
+                new.append([arx, ary]) #좌표 등록
+            self.pos = new
+            for piv in self.pivot:
+                rx = piv[0] - pivot[0]
+                ry = piv[1] - pivot[1] 
+                arx = pivot[0] - ry
+                ary = pivot[1] + rx + 1
+                newp.append([arx, ary, piv[2]])
+            self.pivot = newp
+        else:
+            new = []
+            newp = []
+            for pos in self.pos:
+                rx = pos[0] - pivot[0] 
+                ry = pos[1] - pivot[1] 
+                arx = pivot[0] + ry
+                ary = pivot[1] - rx + 1
+                new.append([arx, ary])
+            self.pos = new
+            for piv in self.pivot:
+                rx = piv[0] - pivot[0] 
+                ry = piv[1] - pivot[1] 
+                arx = pivot[0] + ry
+                ary = pivot[1] - rx + 1
+                newp.append([arx, ary, piv[2]])
+            self.ivot = newp
+            
     def rotate(self, direction):
-        '''
-        rotate
-            rotate the block according to the given direction
-        params:
-            direction : 0 for clockwise, 1 for counterclockwise
-        '''
-        if self.is_rotatable(direction):
-            if direction == 0: #Clockwise:
-                new = []
-                for pos in self.pos:
-                    rx = pos[0] - self.pos[self.pivot][0] #Relative x according to pivot point
-                    ry = pos[1] - self.pos[self.pivot][1] #Relative y according to pivot point
-                    arx = self.pos[self.pivot][0] - ry
-                    ary = self.pos[self.pivot][1] + rx
-                    new.append([arx, ary])
-                self.pos = new
+        for piv in self.pivot:
+            if piv[2] == 1:
+                if self._is_rotatable(direction, (piv[0], piv[1])):
+                    self._rotate(direction, (piv[0], piv[1]))
+                    break
             else:
-                new = []
-                for pos in self.pos:
-                    rx = pos[0] - self.pos[self.pivot][0] #Relative x according to pivot point
-                    ry = pos[1] - self.pos[self.pivot][1] #Relative y according to pivot point
-                    arx = self.pos[self.pivot][0] + ry
-                    ary = self.pos[self.pivot][1] - rx
-                    new.append([arx, ary])
-                self.pos = new
+                if self._is_rotatable_with_falling(direction, (piv[0], piv[1])):
+                    self._rotate_with_falling(direction, (piv[0], piv[1]))
+                    break
 
     def stack(self):
         '''
@@ -153,6 +234,8 @@ class Block:
         if not self.is_ground():
             for pos in self.pos:
                 pos[1] += 1
+            for piv in self.pivot:
+                piv[1] += 1
 
 def check_line():
     '''
@@ -160,7 +243,7 @@ def check_line():
         check if there exist a filled line
     '''
     global stack, width, reward, deleted_lines, level, special
-    line = [n for n in range(height) if sum(stack.values(), []).count(n) == 10] # Find filled line. The width should be 10
+    line = [n for n in range(height) if sum(stack.values(), []).count(n) == width] # Find filled line. The width should be 10
     if len(line) == 0: # If there is no line filled
         point = 0
     else:
