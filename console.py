@@ -3,6 +3,7 @@ import random as r
 import turtle as t
 import threading as th
 from playsound import playsound
+from time import *
 
 # settings
 fps = 1000
@@ -325,7 +326,7 @@ def hold():
                 tmp = bk.Block([[4, 0], [5, 0], [6, 0], [5, 1]], ['#FFFFFF','#6600CC'], [[5, 0, 1], [6, 0, 1], [4, 0, 1], [6, 0, 0], [4, 0, 0]])
                 holding = (tmp, 'T')
             elif now[1] == 'S':
-                tmp = k.Block([[4, 1], [5, 1], [5, 0], [6, 0]], ['#FFFFFF','#33FF00'], [[5, 0, 1], [5, 1, 1], [5, 0, 0], [5, 1, 0]])
+                tmp = bk.Block([[4, 1], [5, 1], [5, 0], [6, 0]], ['#FFFFFF','#33FF00'], [[5, 0, 1], [5, 1, 1], [5, 0, 0], [5, 1, 0]])
                 holding = (tmp, 'S')
             elif now[1] == 'Z':
                 tmp = bk.Block([[4, 0], [5, 0], [5, 1], [6, 1]], ['#FFFFFF','#FF0000'], [[5, 0, 1], [5, 1, 1], [5, 0, 0], [5, 1, 0]])
@@ -346,7 +347,7 @@ def hold():
                 tmp = bk.Block([[4, 0], [5, 0], [6, 0], [5, 1]], ['#FFFFFF','#6600CC'], [[5, 0, 1], [6, 0, 1], [4, 0, 1], [6, 0, 0], [4, 0, 0]])
                 now = (tmp, 'T')
             elif temp[1] == 'S':
-                tmp = k.Block([[4, 1], [5, 1], [5, 0], [6, 0]], ['#FFFFFF','#33FF00'], [[5, 0, 1], [5, 1, 1], [5, 0, 0], [5, 1, 0]])
+                tmp = bk.Block([[4, 1], [5, 1], [5, 0], [6, 0]], ['#FFFFFF','#33FF00'], [[5, 0, 1], [5, 1, 1], [5, 0, 0], [5, 1, 0]])
                 now = (tmp, 'S')
             elif temp[1] == 'Z':
                 tmp = bk.Block([[4, 0], [5, 0], [5, 1], [6, 1]], ['#FFFFFF','#FF0000'], [[5, 0, 1], [5, 1, 1], [5, 0, 0], [5, 1, 0]])
